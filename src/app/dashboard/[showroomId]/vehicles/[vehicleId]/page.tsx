@@ -52,6 +52,7 @@ export default async function EditVehiclePage({
         </CardHeader>
         <CardContent>
           <VehicleForm
+            key={vehicleId}
             action={updateVehicle}
             showroomId={showroomId}
             initial={{

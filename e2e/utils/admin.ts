@@ -5,13 +5,24 @@ import './env'
 // Service-role client. SERVER/TEST ONLY — bypasses RLS. Used to provision a
 // pre-confirmed test user (so we skip the email-confirmation step) and to tear
 // it down afterwards.
+/** When E2E_SUPABASE_PROJECT_REF is set, refuse to run against any other project. */
+function assertE2eSupabaseTarget() {
+  const url = process.env.E2E_SUPABASE_URL ?? ''
+  const expectedRef = process.env.E2E_SUPABASE_PROJECT_REF
+  if (expectedRef && !url.includes(expectedRef)) {
+    throw new Error(
+      `Refusing e2e against "${url}": URL must contain E2E_SUPABASE_PROJECT_REF="${expectedRef}".`,
+    )
+  }
+}
+
 function adminClient(): SupabaseClient {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const url = process.env.E2E_SUPABASE_URL
+  const key = process.env.E2E_SUPABASE_SERVICE_ROLE_KEY
   if (!url || !key) {
     throw new Error(
-      'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY. ' +
-        'Set them in .env.e2e.local (or .env.local) before running e2e tests.',
+      'Missing E2E_SUPABASE_URL or E2E_SUPABASE_SERVICE_ROLE_KEY. ' +
+        'Add them to .env.local before running e2e tests.',
     )
   }
   return createClient(url, key, {
@@ -22,6 +33,7 @@ function adminClient(): SupabaseClient {
 export type TestUser = { id: string; email: string; password: string }
 
 export async function createConfirmedUser(): Promise<TestUser> {
+  assertE2eSupabaseTarget()
   const unique = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
   const email = `e2e-${unique}@example.com`
   const password = 'e2e-Password-123!'
@@ -45,19 +57,31 @@ async function listAllStoragePaths(
   prefix: string,
 ): Promise<string[]> {
   const paths: string[] = []
-  const { data: entries, error } = await client.storage.from(bucket).list(prefix, { limit: 1000 })
-  if (error) throw new Error(`Storage list failed for ${prefix}: ${error.message}`)
-  if (!entries?.length) return paths
+  const pageSize = 1000
+  let offset = 0
 
-  for (const entry of entries) {
-    const path = prefix ? `${prefix}/${entry.name}` : entry.name
-    // Folders have no id; files have id metadata.
-    if (entry.id == null) {
-      paths.push(...(await listAllStoragePaths(client, bucket, path)))
-    } else {
-      paths.push(path)
+  while (true) {
+    const { data: entries, error } = await client.storage
+      .from(bucket)
+      .list(prefix, { limit: pageSize, offset })
+
+    if (error) throw new Error(`Storage list failed for ${prefix}: ${error.message}`)
+    if (!entries?.length) break
+
+    for (const entry of entries) {
+      const path = prefix ? `${prefix}/${entry.name}` : entry.name
+      // Folders have no id; files have id metadata.
+      if (entry.id == null) {
+        paths.push(...(await listAllStoragePaths(client, bucket, path)))
+      } else {
+        paths.push(path)
+      }
     }
+
+    if (entries.length < pageSize) break
+    offset += pageSize
   }
+
   return paths
 }
 
@@ -65,11 +89,18 @@ async function deleteShowroomStorage(client: SupabaseClient, showroomId: string)
   const paths = await listAllStoragePaths(client, VEHICLE_IMAGES_BUCKET, showroomId)
   if (paths.length === 0) return
 
-  const { error } = await client.storage.from(VEHICLE_IMAGES_BUCKET).remove(paths)
-  if (error) throw new Error(`Storage delete failed for showroom ${showroomId}: ${error.message}`)
+  const batchSize = 100
+  for (let i = 0; i < paths.length; i += batchSize) {
+    const batch = paths.slice(i, i + batchSize)
+    const { error } = await client.storage.from(VEHICLE_IMAGES_BUCKET).remove(batch)
+    if (error) {
+      throw new Error(`Storage delete failed for showroom ${showroomId}: ${error.message}`)
+    }
+  }
 }
 
 export async function deleteTestArtifacts(userId: string): Promise<void> {
+  assertE2eSupabaseTarget()
   const client = adminClient()
 
   const { data: showrooms, error: showroomErr } = await client

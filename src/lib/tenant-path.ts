@@ -10,6 +10,8 @@ export function vehicleHref(vehicleId: string): string {
 // path visitors need the slug prefix.
 export function inventoryHref(slug: string, host: string | null): string {
   const tenant = resolveTenant(host)
-  if (tenant.kind === 'tenant' && tenant.via === 'subdomain') return '/'
+  // Subdomain and custom-domain visitors see / in the browser; only platform
+  // path access (localhost:3000/{slug}) needs the slug prefix.
+  if (tenant.kind === 'tenant') return '/'
   return `/${slug}`
 }

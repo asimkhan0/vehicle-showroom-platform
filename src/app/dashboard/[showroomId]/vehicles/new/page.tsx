@@ -17,6 +17,7 @@ export default async function NewVehiclePage({
         </CardHeader>
         <CardContent>
           <VehicleForm
+            key="new"
             action={createVehicle}
             showroomId={showroomId}
             submitLabel="Create listing"

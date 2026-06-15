@@ -1,17 +1,14 @@
 import { defineConfig, devices } from '@playwright/test'
-import './e2e/utils/env'
 
 const PORT = Number(process.env.PORT ?? 3000)
 const BASE_URL = `http://localhost:${PORT}`
 
 export default defineConfig({
   testDir: './e2e',
-  // The happy path mutates shared (remote) data, so keep it serial.
   fullyParallel: false,
   workers: 1,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  // Remote Supabase round-trips + lazy dev compiles are slow; be generous.
   timeout: 120_000,
   expect: { timeout: 20_000 },
   reporter: [['list'], ['html', { open: 'never' }]],
@@ -24,10 +21,11 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: 'npm run dev',
+    command: 'node e2e/run-dev-server.mjs',
     url: BASE_URL,
     timeout: 180_000,
-    reuseExistingServer: !process.env.CI,
+    // Never reuse a dev server on :3000 — it would still point at the dev Supabase project.
+    reuseExistingServer: false,
     stdout: 'pipe',
     stderr: 'pipe',
   },
