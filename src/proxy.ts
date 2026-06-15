@@ -9,9 +9,9 @@ export async function proxy(request: NextRequest) {
 
   let response: NextResponse
 
-  if (tenant.kind === 'tenant' && !url.pathname.startsWith('/_tenant/')) {
+  if (tenant.kind === 'tenant' && !url.pathname.startsWith('/tenant/')) {
     const rewriteUrl = url.clone()
-    rewriteUrl.pathname = `/_tenant/${tenant.slug}${url.pathname}`
+    rewriteUrl.pathname = `/tenant/${tenant.slug}${url.pathname}`
     response = NextResponse.rewrite(rewriteUrl)
   } else {
     response = NextResponse.next()
