@@ -1,9 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
-import { loadLocalEnv } from './e2e/utils/env'
-
-// Make Supabase creds available to the test process (admin client) and to the
-// dev server Playwright may spawn.
-loadLocalEnv()
+import './e2e/utils/env'
 
 const PORT = Number(process.env.PORT ?? 3000)
 const BASE_URL = `http://localhost:${PORT}`

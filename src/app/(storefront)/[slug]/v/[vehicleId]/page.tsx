@@ -52,7 +52,7 @@ export default async function TenantVehicleDetail({
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <Link
-        href="/"
+        href=".."
         className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
       >
         ← All inventory

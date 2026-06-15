@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -54,6 +54,7 @@ const empty: VehicleInitial = {
 
 export function VehicleForm({ action, showroomId, initial = empty, submitLabel }: Props) {
   const [state, formAction, pending] = useActionState<VehicleState, FormData>(action, {})
+  const [status, setStatus] = useState(initial.status)
 
   const priceDefault = initial.price_cents != null ? (initial.price_cents / 100).toFixed(2) : ''
 
@@ -150,7 +151,11 @@ export function VehicleForm({ action, showroomId, initial = empty, submitLabel }
 
         <Field>
           <FieldLabel htmlFor="status">Status</FieldLabel>
-          <Select name="status" defaultValue={initial.status}>
+          <Select
+            name="status"
+            value={status}
+            onValueChange={(value) => setStatus(value as VehicleInitial['status'])}
+          >
             <SelectTrigger id="status">
               <SelectValue />
             </SelectTrigger>

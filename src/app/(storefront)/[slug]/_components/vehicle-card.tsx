@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { publicImageUrl } from '@/lib/storage'
+import { vehicleHref } from '@/lib/tenant-path'
 import { formatMileage, formatPrice, vehicleSubtitle } from './format'
 import type { VehicleListItem } from '../_lib/queries'
 
@@ -16,7 +17,7 @@ export function VehicleCard({
 
   return (
     <Link
-      href={`/v/${vehicle.id}`}
+      href={vehicleHref(vehicle.id)}
       className="group flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-neutral-200 transition-shadow hover:shadow-xl dark:bg-neutral-900 dark:ring-neutral-800"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100 dark:bg-neutral-800">

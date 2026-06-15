@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { RESERVED_SLUGS } from '@/lib/reserved-slugs'
 
 export const credentialsSchema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -11,22 +12,4 @@ export const slugSchema = z
   .max(40, 'At most 40 characters')
   .regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, 'Lowercase letters, numbers, and hyphens only')
 
-export const RESERVED_SLUGS = new Set([
-  'www',
-  'api',
-  'app',
-  'admin',
-  'dashboard',
-  'auth',
-  'login',
-  'signup',
-  'static',
-  'cdn',
-  'mail',
-  'support',
-  'help',
-  'about',
-  'pricing',
-  'terms',
-  'privacy',
-])
+export { RESERVED_SLUGS }

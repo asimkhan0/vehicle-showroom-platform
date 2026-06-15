@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { TenantFooter, TenantHeader } from './_components/tenant-chrome'
+import { inventoryHref } from '@/lib/tenant-path'
 import { getShowroomBySlug } from './_lib/queries'
 
 export async function generateMetadata({
@@ -41,12 +43,15 @@ export default async function TenantLayout({
     ['--tenant-accent-ink' as string]: accentInk,
   } as React.CSSProperties
 
+  const host = (await headers()).get('host')
+  const inventoryHome = inventoryHref(slug, host)
+
   return (
     <div
       style={style}
       className="min-h-dvh bg-neutral-50 font-[family-name:var(--font-geist-sans)] text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100"
     >
-      <TenantHeader showroom={showroom} />
+      <TenantHeader showroom={showroom} inventoryHome={inventoryHome} />
       <main>{children}</main>
       <TenantFooter showroom={showroom} />
     </div>

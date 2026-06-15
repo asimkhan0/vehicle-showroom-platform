@@ -4,19 +4,9 @@
 // Phase 2: custom-domain lookup against an edge cache (Edge Config / Upstash)
 // keyed by hostname.
 
-const PLATFORM_HOST = process.env.NEXT_PUBLIC_PLATFORM_HOST ?? 'localhost:3000'
+import { RESERVED_SLUGS } from '@/lib/reserved-slugs'
 
-// Subdomains that aren't tenants. Keep in sync with reserved-slugs check.
-const RESERVED = new Set([
-  'www',
-  'api',
-  'app',
-  'admin',
-  'dashboard',
-  'static',
-  'cdn',
-  'mail',
-])
+const PLATFORM_HOST = process.env.NEXT_PUBLIC_PLATFORM_HOST ?? 'localhost:3000'
 
 export type TenantResolution =
   | { kind: 'platform' }
@@ -35,7 +25,7 @@ export function resolveTenant(host: string | null): TenantResolution {
 
   if (hostLower.endsWith(`.${platformHost}`)) {
     const sub = hostLower.slice(0, -1 - platformHost.length)
-    if (RESERVED.has(sub) || sub.includes('.')) return { kind: 'platform' }
+    if (RESERVED_SLUGS.has(sub) || sub.includes('.')) return { kind: 'platform' }
     return { kind: 'tenant', slug: sub, via: 'subdomain' }
   }
 

@@ -2,11 +2,17 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { Showroom } from '../_lib/queries'
 
-export function TenantHeader({ showroom }: { showroom: Showroom }) {
+export function TenantHeader({
+  showroom,
+  inventoryHome,
+}: {
+  showroom: Showroom
+  inventoryHome: string
+}) {
   return (
     <header className="sticky top-0 z-10 border-b border-neutral-200/80 bg-white/80 backdrop-blur dark:border-neutral-800/80 dark:bg-neutral-950/80">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href={inventoryHome} className="flex items-center gap-3">
           {showroom.logo_url && (
             <Image
               src={showroom.logo_url}
@@ -19,7 +25,7 @@ export function TenantHeader({ showroom }: { showroom: Showroom }) {
           <span className="text-sm font-semibold tracking-tight">{showroom.name}</span>
         </Link>
         <nav className="text-sm text-neutral-500">
-          <Link href="/" className="hover:text-neutral-900 dark:hover:text-neutral-100">
+          <Link href={inventoryHome} className="hover:text-neutral-900 dark:hover:text-neutral-100">
             Inventory
           </Link>
         </nav>
