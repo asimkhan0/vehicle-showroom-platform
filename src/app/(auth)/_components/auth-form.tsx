@@ -16,7 +16,7 @@ type Props = {
 const COPY = {
   'sign-in': {
     title: 'Sign in',
-    description: 'Welcome back.',
+    description: 'Welcome back to your dealer dashboard.',
     submit: 'Sign in',
     altText: 'No account?',
     altLink: '/signup',
@@ -37,7 +37,7 @@ export function AuthForm({ mode, action }: Props) {
   const copy = COPY[mode]
 
   return (
-    <Card>
+    <Card className="border-border shadow-md">
       <CardHeader>
         <CardTitle>{copy.title}</CardTitle>
         <CardDescription>{copy.description}</CardDescription>
@@ -80,13 +80,16 @@ export function AuthForm({ mode, action }: Props) {
               </p>
             )}
 
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={pending} className="w-full cursor-pointer">
               {pending ? 'Working…' : copy.submit}
             </Button>
 
-            <p className="text-center text-sm text-neutral-500">
+            <p className="text-center text-sm text-muted-foreground">
               {copy.altText}{' '}
-              <Link href={copy.altLink} className="font-medium underline-offset-4 hover:underline">
+              <Link
+                href={copy.altLink}
+                className="cursor-pointer font-medium text-primary underline-offset-4 hover:underline"
+              >
                 {copy.altLabel}
               </Link>
             </p>

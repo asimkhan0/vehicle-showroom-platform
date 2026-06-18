@@ -36,7 +36,7 @@ export default async function TenantLayout({
   const showroom = await getShowroomBySlug(slug)
   if (!showroom) notFound()
 
-  const accent = showroom.theme_json?.accent ?? '#0a0a0a'
+  const accent = showroom.theme_json?.accent ?? '#1e293b'
   const accentInk = '#ffffff'
   const style = {
     ['--tenant-accent' as string]: accent,
@@ -49,7 +49,7 @@ export default async function TenantLayout({
   return (
     <div
       style={style}
-      className="min-h-dvh bg-neutral-50 font-[family-name:var(--font-geist-sans)] text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100"
+      className="min-h-dvh bg-background text-foreground antialiased"
     >
       <TenantHeader showroom={showroom} inventoryHome={inventoryHome} />
       <main>{children}</main>

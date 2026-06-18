@@ -14,7 +14,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { submitInquiry, type InquiryState } from '../_actions/inquiries'
 
 export function InquiryDialog({
@@ -32,7 +33,6 @@ export function InquiryDialog({
     {},
   )
 
-  // Auto-close on success after a brief moment so the user sees the confirmation.
   useEffect(() => {
     if (state.success) {
       const t = setTimeout(() => setOpen(false), 1500)
@@ -43,7 +43,12 @@ export function InquiryDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
-        className="w-full rounded-xl bg-[color:var(--tenant-accent)] px-4 py-3 text-sm font-medium text-[color:var(--tenant-accent-ink)] opacity-90 transition-opacity hover:opacity-100"
+        className={cn(
+          'w-full cursor-pointer rounded-lg px-4 py-3 text-sm font-semibold',
+          'bg-[color:var(--tenant-accent)] text-[color:var(--tenant-accent-ink)]',
+          'transition-opacity duration-200 hover:opacity-90',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--tenant-accent)] focus-visible:ring-offset-2',
+        )}
       >
         Inquire about this vehicle
       </DialogTrigger>
@@ -51,12 +56,12 @@ export function InquiryDialog({
         <DialogHeader>
           <DialogTitle>Inquire about {vehicleTitle}</DialogTitle>
           <DialogDescription>
-            We’ll forward your message to the dealer. They typically respond within a day.
+            We&apos;ll forward your message to the dealer. They typically respond within a day.
           </DialogDescription>
         </DialogHeader>
 
         {state.success ? (
-          <div className="rounded-lg bg-emerald-50 p-4 text-sm text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
             Sent. The dealer will get back to you shortly.
           </div>
         ) : (
@@ -79,7 +84,7 @@ export function InquiryDialog({
                 </Field>
                 <Field data-invalid={!!state.fieldErrors?.phone}>
                   <FieldLabel htmlFor="inq-phone">
-                    Phone <span className="text-neutral-400">(optional)</span>
+                    Phone <span className="text-muted-foreground">(optional)</span>
                   </FieldLabel>
                   <Input id="inq-phone" name="phone" type="tel" maxLength={40} />
                   <FieldError>{state.fieldErrors?.phone}</FieldError>
@@ -110,11 +115,14 @@ export function InquiryDialog({
             <DialogFooter className="mt-6">
               <DialogClose
                 type="button"
-                className="rounded-lg px-3 py-2 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                className={cn(
+                  buttonVariants({ variant: 'ghost', size: 'sm' }),
+                  'cursor-pointer',
+                )}
               >
                 Cancel
               </DialogClose>
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending} className="cursor-pointer">
                 {pending ? 'Sending…' : 'Send inquiry'}
               </Button>
             </DialogFooter>

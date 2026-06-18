@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { publicImageUrl } from '@/lib/storage'
+import { cn } from '@/lib/utils'
 
 type Img = { id: string; storage_path: string }
 
@@ -12,7 +13,7 @@ export function Gallery({ images, alt }: { images: Img[]; alt: string }) {
 
   if (!current) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-neutral-100 text-xs uppercase tracking-wider text-neutral-400 dark:bg-neutral-900">
+      <div className="flex aspect-[4/3] items-center justify-center rounded-xl border border-dashed border-border bg-muted text-xs font-medium uppercase tracking-wider text-muted-foreground">
         No photos yet
       </div>
     )
@@ -20,7 +21,7 @@ export function Gallery({ images, alt }: { images: Img[]; alt: string }) {
 
   return (
     <div className="space-y-3">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-900">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-border bg-muted">
         <Image
           key={current.id}
           src={publicImageUrl(current.storage_path)}
@@ -40,11 +41,12 @@ export function Gallery({ images, alt }: { images: Img[]; alt: string }) {
               onClick={() => setActive(i)}
               aria-label={`Photo ${i + 1}`}
               aria-current={i === active}
-              className={`relative aspect-square overflow-hidden rounded-lg bg-neutral-100 ring-2 transition-all dark:bg-neutral-900 ${
+              className={cn(
+                'relative aspect-square cursor-pointer overflow-hidden rounded-lg border-2 bg-muted transition-colors duration-200',
                 i === active
-                  ? 'ring-[color:var(--tenant-accent)]'
-                  : 'ring-transparent hover:ring-neutral-300 dark:hover:ring-neutral-700'
-              }`}
+                  ? 'border-[color:var(--tenant-accent)]'
+                  : 'border-transparent hover:border-border',
+              )}
             >
               <Image
                 src={publicImageUrl(img.storage_path)}

@@ -64,23 +64,21 @@ export default async function TenantVehicleDetail({
       />
       <Link
         href=".."
-        className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
+        className="cursor-pointer text-sm text-muted-foreground transition-colors duration-200 hover:text-[color:var(--tenant-accent)]"
       >
         ← All inventory
       </Link>
 
       <div className="mt-6 grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-start">
-        {/* Gallery */}
         <div>
           <Gallery images={vehicle.images} alt={vehicle.title} />
         </div>
 
-        {/* Details panel — sticky on desktop */}
         <aside className="lg:sticky lg:top-24">
-          <div className="space-y-6 rounded-2xl bg-white p-6 ring-1 ring-neutral-200 dark:bg-neutral-900 dark:ring-neutral-800">
+          <div className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-sm">
             <div className="space-y-1">
               {subtitle && (
-                <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--tenant-accent)]">
                   {subtitle}
                 </p>
               )}
@@ -111,10 +109,10 @@ export default async function TenantVehicleDetail({
 
       {vehicle.description && (
         <section className="mt-12 max-w-3xl">
-          <h2 className="text-sm font-medium uppercase tracking-wider text-neutral-500">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Description
           </h2>
-          <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-neutral-800 dark:text-neutral-200">
+          <p className="mt-3 whitespace-pre-line text-base leading-relaxed text-foreground/90">
             {vehicle.description}
           </p>
         </section>

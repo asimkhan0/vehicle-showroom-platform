@@ -5,6 +5,7 @@ import {
 } from '@/lib/domains/config'
 import type { DnsRecord } from '@/lib/domains/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageHeader } from '@/components/page-header'
 import { AddDomainForm } from '../../_components/add-domain-form'
 import { DomainList, type DomainRow } from '../../_components/domain-list'
 import {
@@ -42,6 +43,11 @@ export default async function DomainsPage({
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        title="Custom domains"
+        description="Connect your own domain so buyers visit your branded storefront."
+      />
+
       {!isCustomDomainsConfigured() && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">
           {CUSTOM_DOMAINS_DISABLED_MESSAGE}
@@ -58,7 +64,7 @@ export default async function DomainsPage({
       </Card>
 
       <div>
-        <h2 className="mb-3 text-lg font-medium">Your domains</h2>
+        <h2 className="mb-3 text-lg font-medium text-foreground">Your domains</h2>
         <DomainList
           domains={domains}
           verifyAction={verifyDomainAction}

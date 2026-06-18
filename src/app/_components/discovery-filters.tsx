@@ -2,18 +2,22 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTransition } from 'react'
+import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   discoveryFiltersToSearchParams,
+  hasActiveFilters,
   type DiscoveryFilters,
 } from '@/app/_lib/discovery/search-params'
+import { cn } from '@/lib/utils'
 
 export function DiscoveryFilters({ filters }: { filters: DiscoveryFilters }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [pending, startTransition] = useTransition()
+  const active = hasActiveFilters(filters)
 
   function apply(next: Partial<DiscoveryFilters>) {
     const merged: DiscoveryFilters = {
@@ -72,8 +76,27 @@ export function DiscoveryFilters({ filters }: { filters: DiscoveryFilters }) {
     <form
       key={formKey}
       onSubmit={onSubmit}
-      className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900"
+      className={cn(
+        'rounded-xl border border-border bg-card p-4 shadow-sm',
+        'lg:sticky lg:top-24 z-10',
+      )}
     >
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-foreground">Refine search</h2>
+        {active && (
+          <Button
+            type="button"
+            size="xs"
+            variant="ghost"
+            onClick={clearFilters}
+            className="cursor-pointer text-muted-foreground"
+          >
+            <X className="size-3.5" aria-hidden />
+            Clear all
+          </Button>
+        )}
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5">
           <Label htmlFor="make">Make</Label>
@@ -161,13 +184,11 @@ export function DiscoveryFilters({ filters }: { filters: DiscoveryFilters }) {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Button type="submit" size="sm" disabled={pending}>
-          {pending ? 'Searching…' : 'Search'}
+        <Button type="submit" size="sm" disabled={pending} className="cursor-pointer">
+          {pending ? 'Searching…' : 'Apply filters'}
         </Button>
-        {searchParams.toString() && (
-          <Button type="button" size="sm" variant="ghost" onClick={clearFilters}>
-            Clear filters
-          </Button>
+        {active && (
+          <p className="text-xs text-muted-foreground">Filters active</p>
         )}
       </div>
     </form>

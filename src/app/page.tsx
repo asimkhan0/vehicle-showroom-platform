@@ -1,11 +1,11 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
-import { buttonVariants } from '@/components/ui/button'
 import { DiscoveryCard } from '@/app/_components/discovery-card'
 import { DiscoveryFilters } from '@/app/_components/discovery-filters'
+import { DiscoveryHeroSearch } from '@/app/_components/discovery-hero-search'
 import { DiscoveryPagination } from '@/app/_components/discovery-pagination'
+import { PlatformFooter } from '@/app/_components/platform-footer'
 import { PlatformHeader } from '@/app/_components/platform-header'
 import { searchPublishedListings } from '@/app/_lib/discovery/queries'
 import {
@@ -13,6 +13,7 @@ import {
   hasActiveFilters,
   parseDiscoverySearchParams,
 } from '@/app/_lib/discovery/search-params'
+import { VehicleGridSkeleton } from '@/components/vehicle-card-skeleton'
 
 export const metadata: Metadata = {
   title: 'Browse vehicles — Showroom',
@@ -48,36 +49,40 @@ export default async function DiscoveryHome({
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-neutral-50 dark:bg-neutral-950">
+    <div className="flex min-h-dvh flex-col bg-background">
       <PlatformHeader />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
         <section className="mb-10 max-w-3xl">
-          <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+            Vehicle marketplace
+          </p>
+          <h1 className="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             Find your next vehicle
           </h1>
-          <p className="mt-3 text-pretty text-neutral-600 dark:text-neutral-400">
+          <p className="mt-3 text-pretty text-muted-foreground">
             Browse published inventory from showrooms on the platform. Dealers run their own
             storefronts — you search them all in one place.
           </p>
-          <div className="mt-5">
-            <Link href="/signup" className={buttonVariants({ size: 'sm', variant: 'outline' })}>
-              List your inventory
-            </Link>
+          <div className="mt-8">
+            <DiscoveryHeroSearch />
           </div>
         </section>
 
-        <Suspense fallback={<div className="h-40 rounded-2xl bg-neutral-100 dark:bg-neutral-900" />}>
+        <Suspense fallback={<VehicleGridSkeleton count={4} />}>
           <DiscoveryFilters filters={filters} />
         </Suspense>
 
         <section className="mt-10">
           {result.error ? (
-            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+            <div
+              role="alert"
+              className="mb-6 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+            >
               Could not load listings. Please try again in a moment.
             </div>
           ) : (
-            <p className="mb-6 text-sm text-neutral-600 dark:text-neutral-400">
+            <p className="mb-6 text-sm text-muted-foreground">
               {result.total === 0
                 ? filtered
                   ? 'No vehicles match your filters.'
@@ -93,7 +98,7 @@ export default async function DiscoveryHome({
               ))}
             </div>
           ) : !result.error ? (
-            <div className="rounded-2xl border border-dashed border-neutral-300 px-6 py-20 text-center text-sm text-neutral-500 dark:border-neutral-700">
+            <div className="rounded-xl border border-dashed border-border bg-muted/30 px-6 py-20 text-center text-sm text-muted-foreground">
               {filtered
                 ? 'Try adjusting your filters or clear them to see all listings.'
                 : 'When vendors publish vehicles, they will appear here.'}
@@ -107,6 +112,8 @@ export default async function DiscoveryHome({
           />
         </section>
       </main>
+
+      <PlatformFooter />
     </div>
   )
 }

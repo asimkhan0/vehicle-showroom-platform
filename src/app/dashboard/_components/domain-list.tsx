@@ -39,7 +39,7 @@ function DnsRecordsTable({ records }: { records: DnsRecord[] }) {
   return (
     <div className="mt-3 overflow-x-auto rounded border text-sm">
       <table className="w-full min-w-[28rem]">
-        <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500 dark:bg-neutral-900">
+        <thead className="bg-muted text-left text-xs uppercase tracking-wide text-muted-foreground">
           <tr>
             <th className="px-3 py-2">Type</th>
             <th className="px-3 py-2">Name</th>
@@ -105,7 +105,7 @@ function DomainActions({
 export function DomainList({ domains, verifyAction, removeAction }: Props) {
   if (domains.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-8 text-center text-sm text-neutral-500">
+      <div className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
         No custom domains yet. Add one above to serve your showroom on your own hostname.
       </div>
     )
@@ -114,7 +114,7 @@ export function DomainList({ domains, verifyAction, removeAction }: Props) {
   return (
     <div className="space-y-4">
       {domains.map((domain) => (
-        <article key={domain.id} className="rounded-lg border bg-white p-5 dark:bg-neutral-900">
+        <article key={domain.id} className="rounded-lg border border-border bg-card p-5">
           <header className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-3">
               <h3 className="font-medium">{domain.hostname}</h3>
@@ -129,7 +129,7 @@ export function DomainList({ domains, verifyAction, removeAction }: Props) {
                 href={`https://${domain.hostname}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-neutral-500 hover:underline"
+                className="cursor-pointer text-sm text-muted-foreground transition-colors hover:text-primary hover:underline"
               >
                 Visit storefront →
               </a>
@@ -138,7 +138,7 @@ export function DomainList({ domains, verifyAction, removeAction }: Props) {
 
           {domain.status !== 'active' && domain.dns_records && (
             <>
-              <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-300">
+              <p className="mt-3 text-sm text-muted-foreground">
                 Add these DNS records at your registrar, then click Re-check DNS.
               </p>
               <DnsRecordsTable records={domain.dns_records} />

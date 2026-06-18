@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireUser } from '@/lib/auth'
+import { DashboardSidebarNav } from '../_components/dashboard-sidebar-nav'
 
 export default async function ShowroomLayout({
   children,
@@ -20,41 +20,10 @@ export default async function ShowroomLayout({
 
   if (!showroom || showroom.owner_user_id !== user.id) notFound()
 
-  const tabs = [
-    { href: `/dashboard/${showroomId}/vehicles`, label: 'Vehicles' },
-    { href: `/dashboard/${showroomId}/inquiries`, label: 'Inquiries' },
-    { href: `/dashboard/${showroomId}/domains`, label: 'Domains' },
-    { href: `/dashboard/${showroomId}/settings`, label: 'Settings' },
-  ]
-
   return (
-    <div className="space-y-6">
-      <div>
-        <Link
-          href="/dashboard"
-          className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"
-        >
-          ← All showrooms
-        </Link>
-        <h1 className="mt-1 text-2xl font-semibold">{showroom.name}</h1>
-        <p className="text-sm text-neutral-500">
-          <code>{showroom.slug}</code>
-        </p>
-      </div>
-
-      <nav className="flex gap-1 border-b">
-        {tabs.map((t) => (
-          <Link
-            key={t.href}
-            href={t.href}
-            className="border-b-2 border-transparent px-3 py-2 text-sm hover:border-neutral-300"
-          >
-            {t.label}
-          </Link>
-        ))}
-      </nav>
-
-      {children}
+    <div className="flex gap-8">
+      <DashboardSidebarNav showroomId={showroomId} showroomName={showroom.name} />
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   )
 }

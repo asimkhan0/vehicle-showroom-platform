@@ -16,30 +16,36 @@ export default async function TenantHomePage({
 
   return (
     <>
-      {/* Hero */}
-      <section className="border-b border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-        <div className="mx-auto max-w-6xl px-6 pt-16 pb-12 sm:pt-24 sm:pb-16">
+      <section className="relative overflow-hidden border-b border-border bg-card">
+        <div
+          className="absolute inset-0 bg-gradient-to-br from-[color:var(--tenant-accent)]/5 via-transparent to-transparent"
+          aria-hidden
+        />
+        <div className="relative mx-auto max-w-6xl px-6 pt-16 pb-12 sm:pt-24 sm:pb-16">
           <div className="flex flex-col items-start gap-6">
             {showroom.logo_url && (
               <Image
                 src={showroom.logo_url}
                 alt=""
-                width={64}
-                height={64}
-                className="rounded-xl object-cover ring-1 ring-neutral-200 dark:ring-neutral-800"
+                width={72}
+                height={72}
+                className="rounded-xl object-cover ring-2 ring-[color:var(--tenant-accent)]/20"
               />
             )}
             <div className="space-y-3">
-              <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-6xl">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--tenant-accent)]">
+                Vehicle showroom
+              </p>
+              <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
                 {showroom.name}
               </h1>
               {showroom.bio && (
-                <p className="max-w-2xl text-pretty text-lg text-neutral-600 dark:text-neutral-400">
+                <p className="max-w-2xl text-pretty text-lg text-muted-foreground">
                   {showroom.bio}
                 </p>
               )}
             </div>
-            <p className="text-sm uppercase tracking-wider text-neutral-500">
+            <p className="rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium uppercase tracking-wider text-muted-foreground backdrop-blur-sm">
               {vehicles.length === 0
                 ? 'No vehicles available'
                 : `${vehicles.length} vehicle${vehicles.length === 1 ? '' : 's'} available`}
@@ -48,10 +54,9 @@ export default async function TenantHomePage({
         </div>
       </section>
 
-      {/* Inventory */}
       <section className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
         {vehicles.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-neutral-300 px-6 py-20 text-center text-sm text-neutral-500 dark:border-neutral-700">
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 px-6 py-20 text-center text-sm text-muted-foreground">
             New listings will appear here soon. Check back shortly.
           </div>
         ) : (
