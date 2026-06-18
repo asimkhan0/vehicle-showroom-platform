@@ -1,7 +1,30 @@
-import Image from 'next/image'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { StorefrontHero } from './_components/storefront-hero'
 import { VehicleCard } from './_components/vehicle-card'
-import { getPublishedVehicles, getShowroomBySlug } from './_lib/queries'
+import {
+  getFeaturedVehicles,
+  getPublishedVehicles,
+  getShowroomBySlug,
+} from './_lib/queries'
+import { buttonVariants } from '@/components/ui/button'
+import { platformUrl } from '@/lib/platform-url'
+import { cn } from '@/lib/utils'
+import type { VehicleListItem } from './_lib/queries'
+
+function resolveHighlights(
+  vehicles: VehicleListItem[],
+  featuredIds: string[],
+  explicitFeatured: VehicleListItem[],
+): { highlights: VehicleListItem[]; label: string; explicit: boolean } {
+  if (explicitFeatured.length > 0) {
+    return { highlights: explicitFeatured, label: 'Featured', explicit: true }
+  }
+  if (vehicles.length >= 4) {
+    return { highlights: vehicles.slice(0, 3), label: 'Recently added', explicit: false }
+  }
+  return { highlights: [], label: '', explicit: false }
+}
 
 export default async function TenantHomePage({
   params,
@@ -13,59 +36,77 @@ export default async function TenantHomePage({
   if (!showroom) notFound()
 
   const vehicles = await getPublishedVehicles(showroom.id)
+  const featuredIds = showroom.theme_json?.featured ?? []
+  const explicitFeatured = await getFeaturedVehicles(showroom.id, featuredIds)
+  const coverPath = showroom.theme_json?.coverImagePath
+
+  const { highlights, label, explicit } = resolveHighlights(
+    vehicles,
+    featuredIds,
+    explicitFeatured,
+  )
+
+  const highlightIds = new Set(highlights.map((v) => v.id))
+  const inventoryVehicles =
+    highlights.length > 0
+      ? vehicles.filter((v) => !highlightIds.has(v.id))
+      : vehicles
 
   return (
     <>
-      <section className="relative overflow-hidden border-b border-border bg-card">
-        <div
-          className="absolute inset-0 bg-gradient-to-br from-[color:var(--tenant-accent)]/5 via-transparent to-transparent"
-          aria-hidden
-        />
-        <div className="relative mx-auto max-w-6xl px-6 pt-16 pb-12 sm:pt-24 sm:pb-16">
-          <div className="flex flex-col items-start gap-6">
-            {showroom.logo_url && (
-              <Image
-                src={showroom.logo_url}
-                alt=""
-                width={72}
-                height={72}
-                className="rounded-xl object-cover ring-2 ring-[color:var(--tenant-accent)]/20"
-              />
-            )}
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-[color:var(--tenant-accent)]">
-                Vehicle showroom
-              </p>
-              <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-                {showroom.name}
-              </h1>
-              {showroom.bio && (
-                <p className="max-w-2xl text-pretty text-lg text-muted-foreground">
-                  {showroom.bio}
-                </p>
-              )}
+      <StorefrontHero
+        showroom={showroom}
+        coverPath={coverPath}
+        vehicleCount={vehicles.length}
+      />
+
+      {highlights.length > 0 && (
+        <section className="mx-auto max-w-6xl px-6 pt-12 sm:pt-16">
+          <div className="mb-6 flex items-baseline justify-between gap-4">
+            <div>
+              <p className="text-overline text-[color:var(--tenant-accent)]">{label}</p>
+              <h2 className="mt-1 text-xl font-semibold text-foreground">
+                {explicit ? 'Spotlight listings' : 'Fresh on the lot'}
+              </h2>
             </div>
-            <p className="rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium uppercase tracking-wider text-muted-foreground backdrop-blur-sm">
-              {vehicles.length === 0
-                ? 'No vehicles available'
-                : `${vehicles.length} vehicle${vehicles.length === 1 ? '' : 's'} available`}
-            </p>
           </div>
-        </div>
-      </section>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {highlights.map((v, i) => (
+              <VehicleCard key={v.id} vehicle={v} priority={i < 3} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
-        {vehicles.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-muted/30 px-6 py-20 text-center text-sm text-muted-foreground">
-            New listings will appear here soon. Check back shortly.
+        {inventoryVehicles.length > 0 && highlights.length > 0 && (
+          <div className="mb-6">
+            <p className="text-overline text-muted-foreground">Browse</p>
+            <h2 className="mt-1 text-xl font-semibold text-foreground">All inventory</h2>
           </div>
-        ) : (
+        )}
+        {vehicles.length === 0 ? (
+          <div className="rounded-xl border border-border bg-muted/30 px-6 py-16 text-center">
+            <p className="text-base font-medium text-foreground">
+              This showroom is stocking up
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Browse all vehicles on the marketplace while new listings arrive.
+            </p>
+            <Link
+              href={platformUrl('/')}
+              className={cn(buttonVariants({ variant: 'outline' }), 'mt-6 inline-flex')}
+            >
+              Browse marketplace
+            </Link>
+          </div>
+        ) : inventoryVehicles.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {vehicles.map((v, i) => (
+            {inventoryVehicles.map((v, i) => (
               <VehicleCard key={v.id} vehicle={v} priority={i < 4} />
             ))}
           </div>
-        )}
+        ) : null}
       </section>
     </>
   )

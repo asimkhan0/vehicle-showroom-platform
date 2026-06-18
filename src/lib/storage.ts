@@ -11,6 +11,11 @@ export function vehicleImagePath(opts: {
   return `${opts.showroomId}/${opts.vehicleId}/${crypto.randomUUID()}.${safeExt}`
 }
 
+export function showroomCoverPath(opts: { showroomId: string; ext: string }) {
+  const safeExt = opts.ext.replace(/[^a-z0-9]/gi, '').toLowerCase() || 'jpg'
+  return `${opts.showroomId}/cover/${crypto.randomUUID()}.${safeExt}`
+}
+
 export function publicImageUrl(path: string) {
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL
   if (!base) return ''

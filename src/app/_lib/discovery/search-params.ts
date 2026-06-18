@@ -107,6 +107,18 @@ export function discoveryFiltersToSearchParams(filters: DiscoveryFilters): URLSe
   return params
 }
 
+export function countActiveFilters(filters: DiscoveryFilters): number {
+  let count = 0
+  if (filters.make) count++
+  if (filters.model) count++
+  if (filters.year != null) count++
+  if (filters.priceMin != null) count++
+  if (filters.priceMax != null) count++
+  if (filters.mileageMin != null) count++
+  if (filters.mileageMax != null) count++
+  return count
+}
+
 export function hasActiveFilters(filters: DiscoveryFilters): boolean {
   return Boolean(
     filters.make ||

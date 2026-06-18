@@ -5,6 +5,10 @@ import { requireUser } from '@/lib/auth'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageHeader } from '@/components/page-header'
+import {
+  NextActionsPanel,
+  type NextAction,
+} from './_components/next-actions-panel'
 
 export default async function DashboardHome() {
   const { supabase, user } = await requireUser()
@@ -20,24 +24,70 @@ export default async function DashboardHome() {
   }
 
   const showroomIds = showrooms.map((s) => s.id)
+  const showroomById = new Map(showrooms.map((s) => [s.id, s]))
 
-  const [{ count: published }, { count: drafts }, { count: unread }] = await Promise.all([
-    supabase
-      .from('vehicles')
-      .select('id', { count: 'exact', head: true })
-      .in('showroom_id', showroomIds)
-      .eq('status', 'published'),
-    supabase
-      .from('vehicles')
-      .select('id', { count: 'exact', head: true })
-      .in('showroom_id', showroomIds)
-      .eq('status', 'draft'),
-    supabase
-      .from('inquiries')
-      .select('id', { count: 'exact', head: true })
-      .in('showroom_id', showroomIds)
-      .is('read_at', null),
-  ])
+  const [{ count: published }, { count: drafts }, { count: unread }, { data: unreadByShowroom }, { data: draftsByShowroom }] =
+    await Promise.all([
+      supabase
+        .from('vehicles')
+        .select('id', { count: 'exact', head: true })
+        .in('showroom_id', showroomIds)
+        .eq('status', 'published'),
+      supabase
+        .from('vehicles')
+        .select('id', { count: 'exact', head: true })
+        .in('showroom_id', showroomIds)
+        .eq('status', 'draft'),
+      supabase
+        .from('inquiries')
+        .select('id', { count: 'exact', head: true })
+        .in('showroom_id', showroomIds)
+        .is('read_at', null),
+      supabase
+        .from('inquiries')
+        .select('showroom_id')
+        .in('showroom_id', showroomIds)
+        .is('read_at', null),
+      supabase
+        .from('vehicles')
+        .select('showroom_id')
+        .in('showroom_id', showroomIds)
+        .eq('status', 'draft'),
+    ])
+
+  const unreadCounts = new Map<string, number>()
+  for (const row of unreadByShowroom ?? []) {
+    unreadCounts.set(row.showroom_id, (unreadCounts.get(row.showroom_id) ?? 0) + 1)
+  }
+
+  const draftCounts = new Map<string, number>()
+  for (const row of draftsByShowroom ?? []) {
+    draftCounts.set(row.showroom_id, (draftCounts.get(row.showroom_id) ?? 0) + 1)
+  }
+
+  const nextActions: NextAction[] = []
+
+  for (const [showroomId, count] of unreadCounts) {
+    if (count === 0) continue
+    const showroom = showroomById.get(showroomId)
+    if (!showroom) continue
+    nextActions.push({
+      href: `/dashboard/${showroomId}/inquiries`,
+      label: `${count} unread inquir${count === 1 ? 'y' : 'ies'} at ${showroom.name}`,
+      icon: 'inquiry',
+    })
+  }
+
+  for (const [showroomId, count] of draftCounts) {
+    if (count === 0) continue
+    const showroom = showroomById.get(showroomId)
+    if (!showroom) continue
+    nextActions.push({
+      href: `/dashboard/${showroomId}/vehicles`,
+      label: `${count} draft${count === 1 ? '' : 's'} ready to publish at ${showroom.name}`,
+      icon: 'draft',
+    })
+  }
 
   const stats = [
     {
@@ -88,6 +138,8 @@ export default async function DashboardHome() {
           </Card>
         ))}
       </div>
+
+      <NextActionsPanel actions={nextActions} />
 
       <div className="grid gap-4 sm:grid-cols-2">
         {showrooms.map((s) => (

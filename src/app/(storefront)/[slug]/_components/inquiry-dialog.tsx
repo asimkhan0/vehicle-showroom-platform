@@ -18,16 +18,52 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { submitInquiry, type InquiryState } from '../_actions/inquiries'
 
+const SUGGESTED_QUESTIONS = [
+  'Is this vehicle still available?',
+  'Can I schedule a test drive?',
+  'Do you accept trade-ins?',
+  'Is the price negotiable?',
+]
+
+export function InquiryCTA({
+  label,
+  className,
+}: {
+  label: string
+  className?: string
+}) {
+  return (
+    <span
+      className={cn(
+        'inline-flex w-full cursor-pointer items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold',
+        'bg-[color:var(--tenant-accent)] text-[color:var(--tenant-accent-ink)]',
+        'transition-opacity duration-200 hover:opacity-90',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--tenant-accent)] focus-visible:ring-offset-2',
+        className,
+      )}
+    >
+      {label}
+    </span>
+  )
+}
+
 export function InquiryDialog({
   showroomId,
   vehicleId,
   vehicleTitle,
+  dealerName,
+  showMobileBar = true,
 }: {
   showroomId: string
   vehicleId: string
   vehicleTitle: string
+  dealerName: string
+  showMobileBar?: boolean
 }) {
   const [open, setOpen] = useState(false)
+  const [message, setMessage] = useState(
+    `I'm interested in the ${vehicleTitle}. Is it still available?`,
+  )
   const [state, formAction, pending] = useActionState<InquiryState, FormData>(
     submitInquiry,
     {},
@@ -40,23 +76,28 @@ export function InquiryDialog({
     }
   }, [state.success])
 
+  const triggerLabel = `Message ${dealerName}`
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        className={cn(
-          'w-full cursor-pointer rounded-lg px-4 py-3 text-sm font-semibold',
-          'bg-[color:var(--tenant-accent)] text-[color:var(--tenant-accent-ink)]',
-          'transition-opacity duration-200 hover:opacity-90',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--tenant-accent)] focus-visible:ring-offset-2',
-        )}
-      >
-        Inquire about this vehicle
+      <DialogTrigger className="hidden w-full md:block">
+        <InquiryCTA label={triggerLabel} />
       </DialogTrigger>
+
+      {showMobileBar && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-4 backdrop-blur-sm md:hidden">
+          <DialogTrigger className="w-full">
+            <InquiryCTA label={triggerLabel} />
+          </DialogTrigger>
+        </div>
+      )}
+
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Inquire about {vehicleTitle}</DialogTitle>
           <DialogDescription>
-            We&apos;ll forward your message to the dealer. They typically respond within a day.
+            We&apos;ll forward your message to {dealerName}. They typically respond within a
+            day.
           </DialogDescription>
         </DialogHeader>
 
@@ -93,6 +134,18 @@ export function InquiryDialog({
 
               <Field data-invalid={!!state.fieldErrors?.message}>
                 <FieldLabel htmlFor="inq-message">Message</FieldLabel>
+                <div className="mb-2 flex flex-wrap gap-1.5">
+                  {SUGGESTED_QUESTIONS.map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => setMessage(q)}
+                      className="cursor-pointer rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
                 <Textarea
                   id="inq-message"
                   name="message"
@@ -100,7 +153,8 @@ export function InquiryDialog({
                   required
                   minLength={10}
                   maxLength={2000}
-                  defaultValue={`I'm interested in the ${vehicleTitle}. Is it still available?`}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                 />
                 <FieldError>{state.fieldErrors?.message}</FieldError>
               </Field>

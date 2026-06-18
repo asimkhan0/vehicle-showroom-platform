@@ -1,19 +1,31 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { DiscoveryCard } from '@/app/_components/discovery-card'
+import { DiscoveryEmptyState } from '@/app/_components/discovery-empty-state'
 import { DiscoveryFilters } from '@/app/_components/discovery-filters'
 import { DiscoveryHeroSearch } from '@/app/_components/discovery-hero-search'
 import { DiscoveryPagination } from '@/app/_components/discovery-pagination'
+import { DiscoveryResultsTitle } from '@/app/_components/discovery-results-title'
+import { FeaturedListingsRail } from '@/app/_components/featured-listings-rail'
+import { FilterChipBar } from '@/app/_components/filter-chip-bar'
 import { PlatformFooter } from '@/app/_components/platform-footer'
 import { PlatformHeader } from '@/app/_components/platform-header'
-import { searchPublishedListings } from '@/app/_lib/discovery/queries'
+import { TrustStrip } from '@/app/_components/trust-strip'
+import {
+  getPlatformStats,
+  getRecentlyListed,
+  searchPublishedListings,
+} from '@/app/_lib/discovery/queries'
 import {
   discoveryFiltersToSearchParams,
   hasActiveFilters,
   parseDiscoverySearchParams,
 } from '@/app/_lib/discovery/search-params'
+import { buttonVariants } from '@/components/ui/button'
 import { VehicleGridSkeleton } from '@/components/vehicle-card-skeleton'
+import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Browse vehicles — Showroom',
@@ -33,7 +45,11 @@ export default async function DiscoveryHome({
 }) {
   const resolved = await searchParams
   const filters = parseDiscoverySearchParams(resolved)
-  const result = await searchPublishedListings(filters)
+  const [result, stats, recent] = await Promise.all([
+    searchPublishedListings(filters),
+    getPlatformStats(),
+    getRecentlyListed(8),
+  ])
   const filtered = hasActiveFilters(filters)
 
   if (
@@ -53,25 +69,29 @@ export default async function DiscoveryHome({
       <PlatformHeader />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
-        <section className="mb-10 max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-            Vehicle marketplace
-          </p>
-          <h1 className="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            Find your next vehicle
+        <section className="mb-12">
+          <p className="text-overline text-primary">Vehicle marketplace</p>
+          <h1 className="text-display mt-2 text-balance tracking-tight text-foreground">
+            Find your next car
           </h1>
-          <p className="mt-3 text-pretty text-muted-foreground">
+          <p className="mt-3 max-w-2xl text-pretty text-muted-foreground">
             Browse published inventory from showrooms on the platform. Dealers run their own
             storefronts — you search them all in one place.
           </p>
           <div className="mt-8">
-            <DiscoveryHeroSearch />
+            <DiscoveryHeroSearch stats={stats} />
           </div>
         </section>
 
         <Suspense fallback={<VehicleGridSkeleton count={4} />}>
           <DiscoveryFilters filters={filters} />
         </Suspense>
+
+        <FilterChipBar filters={filters} />
+
+        {!filtered && stats.vehicleCount > 4 && (
+          <FeaturedListingsRail listings={recent} />
+        )}
 
         <section className="mt-10">
           {result.error ? (
@@ -82,13 +102,7 @@ export default async function DiscoveryHome({
               Could not load listings. Please try again in a moment.
             </div>
           ) : (
-            <p className="mb-6 text-sm text-muted-foreground">
-              {result.total === 0
-                ? filtered
-                  ? 'No vehicles match your filters.'
-                  : 'No published vehicles yet.'
-                : `${result.total} vehicle${result.total === 1 ? '' : 's'} found`}
-            </p>
+            <DiscoveryResultsTitle filters={filters} total={result.total} />
           )}
 
           {result.listings.length > 0 ? (
@@ -98,11 +112,7 @@ export default async function DiscoveryHome({
               ))}
             </div>
           ) : !result.error ? (
-            <div className="rounded-xl border border-dashed border-border bg-muted/30 px-6 py-20 text-center text-sm text-muted-foreground">
-              {filtered
-                ? 'Try adjusting your filters or clear them to see all listings.'
-                : 'When vendors publish vehicles, they will appear here.'}
-            </div>
+            <DiscoveryEmptyState filtered={filtered} filters={filters} />
           ) : null}
 
           <DiscoveryPagination
@@ -110,6 +120,21 @@ export default async function DiscoveryHome({
             page={result.page}
             totalPages={result.totalPages}
           />
+        </section>
+
+        <section className="mt-16 space-y-8">
+          <TrustStrip stats={stats} />
+          <div className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card px-6 py-10 text-center shadow-sm sm:flex-row sm:justify-between sm:text-left">
+            <div>
+              <p className="text-lg font-semibold text-foreground">Ready to sell?</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Publish your inventory and reach buyers searching across Showroom.
+              </p>
+            </div>
+            <Link href="/signup" className={cn(buttonVariants({ size: 'lg' }), 'shrink-0')}>
+              List your inventory
+            </Link>
+          </div>
         </section>
       </main>
 

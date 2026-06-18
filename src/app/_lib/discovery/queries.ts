@@ -11,6 +11,7 @@ export type DiscoveryListing = {
   price_cents: number | null
   mileage: number | null
   primary_image: string | null
+  published_at: string | null
   showroom_slug: string
   showroom_name: string
 }
@@ -37,6 +38,7 @@ type VehicleRow = {
   year: number | null
   price_cents: number | null
   mileage: number | null
+  published_at: string | null
   showrooms: { slug: string; name: string; status: string } | { slug: string; name: string; status: string }[]
   vehicle_images: Array<{
     storage_path: string
@@ -68,6 +70,7 @@ function mapRow(row: VehicleRow): DiscoveryListing | null {
     price_cents: row.price_cents,
     mileage: row.mileage,
     primary_image: primaryImageFromRow(row.vehicle_images),
+    published_at: row.published_at,
     showroom_slug: showroom.slug,
     showroom_name: showroom.name,
   }
@@ -85,7 +88,7 @@ export async function searchPublishedListings(
     .from('vehicles')
     .select(
       `
-      id, title, make, model, year, price_cents, mileage,
+      id, title, make, model, year, price_cents, mileage, published_at,
       showrooms!inner(slug, name, status),
       vehicle_images(storage_path, is_primary, sort_order)
     `,
@@ -145,6 +148,58 @@ export async function searchPublishedListings(
     pageSize: DISCOVERY_PAGE_SIZE,
     totalPages,
   }
+}
+
+export type PlatformStats = {
+  vehicleCount: number
+  showroomCount: number
+}
+
+export async function getPlatformStats(): Promise<PlatformStats> {
+  const supabase = await createClient()
+
+  const [vehiclesRes, showroomsRes] = await Promise.all([
+    supabase
+      .from('vehicles')
+      .select('id, showrooms!inner(status)', { count: 'exact', head: true })
+      .eq('status', 'published')
+      .eq('showrooms.status', 'active'),
+    supabase
+      .from('showrooms')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'active'),
+  ])
+
+  return {
+    vehicleCount: vehiclesRes.count ?? 0,
+    showroomCount: showroomsRes.count ?? 0,
+  }
+}
+
+const RECENT_LISTING_SELECT = `
+  id, title, make, model, year, price_cents, mileage, published_at,
+  showrooms!inner(slug, name, status),
+  vehicle_images(storage_path, is_primary, sort_order)
+`
+
+export async function getRecentlyListed(limit = 8): Promise<DiscoveryListing[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('vehicles')
+    .select(RECENT_LISTING_SELECT)
+    .eq('status', 'published')
+    .eq('showrooms.status', 'active')
+    .order('published_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('getRecentlyListed failed', error)
+    return []
+  }
+
+  return (data ?? [])
+    .map((row) => mapRow(row as VehicleRow))
+    .filter((row): row is DiscoveryListing => row != null)
 }
 
 export type SitemapShowroom = { slug: string; updated_at: string }

@@ -42,10 +42,19 @@
 ### Interaction
 
 - Hover: color/shadow transitions `150–300ms` — **no layout-shifting scale**
-- Image cards: inner image zoom only (`scale-[1.03]` inside `overflow-hidden`)
+- Image cards: brightness lift on hover (`brightness-105`), shadow on card — no scale transform
 - `cursor-pointer` on all interactive elements
 - Visible focus rings (`ring-2 ring-ring ring-offset-2`)
 - `prefers-reduced-motion` respected globally
+
+### Typography utilities (Direction B)
+
+| Class | Use |
+|-------|-----|
+| `text-display` | Platform hero headline (one per page) |
+| `text-title-lg` | Storefront dealer name |
+| `text-price-lg` | VDP price |
+| `text-overline` | Section labels, uppercase tracking |
 
 ### Icons
 
@@ -57,10 +66,12 @@
 
 ### Vehicle listing card
 
-- 4:3 image, rounded-xl border, shadow on hover
-- Price: tabular-nums, semibold
-- Mileage chip with Gauge icon
-- Optional vendor badge (discovery)
+- **16:9** image (`aspect-video`), rounded-xl border, shadow on hover
+- Layout: **price → title → meta → dealer link** (price is strongest text after photo)
+- Price: `text-xl font-semibold tabular-nums`
+- Mileage with Gauge icon; dealer name as subordinate text link (not on image)
+- Temporal badge only on image ("Just listed") — not dealer name
+- Missing photo: branded gradient placeholder (`VehicleImagePlaceholder`)
 
 ### Buttons
 

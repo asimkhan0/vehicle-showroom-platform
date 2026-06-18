@@ -25,6 +25,12 @@
 
 ## Hero
 
-- Subtle accent gradient wash behind hero content
-- Logo with accent-tinted ring
-- Inventory count as pill badge
+- Full-bleed **21:9** hero (`StorefrontHero`) — cover image with dark gradient, or tenant-accent gradient fallback with dot texture
+- Accent stripe at hero bottom; floating header with matching accent rule
+- Dealer name at display scale (4xl–6xl); bio and inventory count pill over hero
+- Auto **Recently added** row (3 cards) when 4+ vehicles and no dealer-picked featured set
+
+## Chrome
+
+- Floating contained header (matches platform nav pattern) with initial avatar fallback when no logo
+- Footer with dealer bio snippet, marketplace link, accent bottom stripe

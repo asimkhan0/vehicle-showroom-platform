@@ -7,6 +7,12 @@ import type { DiscoveryListing } from '@/app/_lib/discovery/queries'
 import { VehicleListingCard } from '@/components/vehicle-listing-card'
 import { publicImageUrl } from '@/lib/storage'
 
+function isJustListed(publishedAt: string | null): boolean {
+  if (!publishedAt) return false
+  const days = (Date.now() - new Date(publishedAt).getTime()) / (1000 * 60 * 60 * 24)
+  return days < 7
+}
+
 export function DiscoveryCard({
   listing,
   priority,
@@ -27,7 +33,9 @@ export function DiscoveryCard({
       imageUrl={listing.primary_image ? publicImageUrl(listing.primary_image) : null}
       imageAlt={listing.title}
       mileage={mileage}
-      badge={listing.showroom_name}
+      dealerName={listing.showroom_name}
+      dealerHref={`/${listing.showroom_slug}`}
+      badge={isJustListed(listing.published_at) ? 'Just listed' : null}
       priority={priority}
     />
   )

@@ -136,6 +136,32 @@
   }
 }
 
+@layer utilities {
+  .text-display {
+    font-size: clamp(2.5rem, 5vw, 3rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .text-title-lg {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .text-price-lg {
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .text-overline {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

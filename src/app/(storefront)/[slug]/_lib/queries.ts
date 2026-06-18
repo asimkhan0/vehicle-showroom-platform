@@ -1,14 +1,21 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 
+export type ShowroomTheme = {
+  accent?: string
+  coverImagePath?: string
+  featured?: string[]
+}
+
 export type Showroom = {
   id: string
   slug: string
   name: string
   bio: string | null
   logo_url: string | null
-  theme_json: { accent?: string } | null
+  theme_json: ShowroomTheme | null
   status: 'active' | 'suspended'
+  created_at: string
 }
 
 export type VehicleListItem = {
@@ -36,7 +43,7 @@ export const getShowroomBySlug = cache(async (slug: string): Promise<Showroom | 
   const supabase = await createClient()
   const { data } = await supabase
     .from('showrooms')
-    .select('id, slug, name, bio, logo_url, theme_json, status')
+    .select('id, slug, name, bio, logo_url, theme_json, status, created_at')
     .eq('slug', slug)
     .eq('status', 'active')
     .maybeSingle()
@@ -126,4 +133,91 @@ export async function getPublishedVehicle(
     primary_image: primary?.storage_path ?? null,
     images,
   }
+}
+
+export type SimilarVehicle = VehicleListItem & {
+  showroom_slug: string
+  showroom_name: string
+}
+
+type SimilarRow = {
+  id: string
+  title: string
+  make: string | null
+  model: string | null
+  year: number | null
+  price_cents: number | null
+  mileage: number | null
+  body_type: string | null
+  fuel: string | null
+  showrooms: { slug: string; name: string; status: string } | { slug: string; name: string; status: string }[]
+  vehicle_images: Array<{
+    storage_path: string
+    is_primary: boolean
+    sort_order: number
+  }> | null
+}
+
+export async function getSimilarVehicles(
+  make: string | null,
+  excludeId: string,
+  limit = 4,
+): Promise<SimilarVehicle[]> {
+  if (!make) return []
+
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('vehicles')
+    .select(
+      `id, title, make, model, year, price_cents, mileage, body_type, fuel,
+      showrooms!inner(slug, name, status),
+      vehicle_images(storage_path, is_primary, sort_order)`,
+    )
+    .eq('status', 'published')
+    .eq('showrooms.status', 'active')
+    .ilike('make', make)
+    .neq('id', excludeId)
+    .order('published_at', { ascending: false })
+    .limit(limit)
+
+  return (data ?? [])
+    .map((row) => {
+      const r = row as SimilarRow
+      const showroom = Array.isArray(r.showrooms) ? r.showrooms[0] : r.showrooms
+      if (!showroom) return null
+      const imgs = r.vehicle_images ?? []
+      const primary =
+        imgs.find((i) => i.is_primary) ??
+        imgs.slice().sort((a, b) => a.sort_order - b.sort_order)[0]
+      const item: SimilarVehicle = {
+        id: r.id,
+        title: r.title,
+        make: r.make,
+        model: r.model,
+        year: r.year,
+        price_cents: r.price_cents,
+        mileage: r.mileage,
+        body_type: r.body_type,
+        fuel: r.fuel,
+        primary_image: primary?.storage_path ?? null,
+        showroom_slug: showroom.slug,
+        showroom_name: showroom.name,
+      }
+      return item
+    })
+    .filter((v): v is SimilarVehicle => v != null)
+}
+
+export async function getFeaturedVehicles(
+  showroomId: string,
+  featuredIds: string[],
+): Promise<VehicleListItem[]> {
+  if (featuredIds.length === 0) return []
+
+  const all = await getPublishedVehicles(showroomId)
+  const byId = new Map(all.map((v) => [v.id, v]))
+  return featuredIds
+    .map((id) => byId.get(id))
+    .filter((v): v is VehicleListItem => v != null)
+    .slice(0, 3)
 }

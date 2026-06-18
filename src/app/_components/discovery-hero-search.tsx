@@ -7,21 +7,31 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { POPULAR_MAKES } from '@/app/_components/platform-footer'
-import { discoveryFiltersToSearchParams } from '@/app/_lib/discovery/search-params'
+import {
+  discoveryFiltersToSearchParams,
+  type DiscoveryFilters,
+} from '@/app/_lib/discovery/search-params'
+import type { PlatformStats } from '@/app/_lib/discovery/queries'
 
-export function DiscoveryHeroSearch() {
+type IntentChip = {
+  label: string
+  filters: Partial<DiscoveryFilters>
+}
+
+const INTENT_CHIPS: IntentChip[] = [
+  { label: 'Under $20k', filters: { priceMax: 2_000_000 } },
+  { label: 'Low mileage', filters: { mileageMax: 30_000 } },
+  { label: 'Under $30k', filters: { priceMax: 3_000_000 } },
+]
+
+export function DiscoveryHeroSearch({ stats }: { stats?: PlatformStats }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const fd = new FormData(e.currentTarget)
-    const make = String(fd.get('make') ?? '').trim()
-    const model = String(fd.get('model') ?? '').trim()
+  function navigate(filters: Partial<DiscoveryFilters>) {
     const params = discoveryFiltersToSearchParams({
-      make: make || undefined,
-      model: model || undefined,
       page: 1,
+      ...filters,
     })
     const qs = params.toString()
     startTransition(() => {
@@ -29,15 +39,33 @@ export function DiscoveryHeroSearch() {
     })
   }
 
-  function searchMake(make: string) {
-    const params = discoveryFiltersToSearchParams({ make, page: 1 })
-    startTransition(() => {
-      router.push(`/?${params.toString()}`)
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const fd = new FormData(e.currentTarget)
+    const make = String(fd.get('make') ?? '').trim()
+    const model = String(fd.get('model') ?? '').trim()
+    navigate({
+      make: make || undefined,
+      model: model || undefined,
     })
   }
 
   return (
-    <div className="space-y-4">
+    <div className="mx-auto max-w-4xl space-y-4">
+      {stats && stats.vehicleCount > 0 && (
+        <p className="text-sm text-muted-foreground">
+          Search{' '}
+          <span className="font-medium text-foreground">
+            {stats.vehicleCount.toLocaleString()}
+          </span>{' '}
+          vehicles from{' '}
+          <span className="font-medium text-foreground">
+            {stats.showroomCount.toLocaleString()}
+          </span>{' '}
+          independent showrooms
+        </p>
+      )}
+
       <form
         onSubmit={onSubmit}
         className="flex flex-col gap-3 rounded-xl border border-border bg-card p-2 shadow-sm sm:flex-row sm:items-center"
@@ -71,18 +99,27 @@ export function DiscoveryHeroSearch() {
       </form>
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Popular:
-        </span>
+        <span className="text-overline text-muted-foreground">Popular:</span>
         {POPULAR_MAKES.map((make) => (
           <button
             key={make}
             type="button"
-            onClick={() => searchMake(make)}
+            onClick={() => navigate({ make })}
             disabled={pending}
             className="cursor-pointer rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-foreground transition-colors duration-200 hover:border-primary/30 hover:bg-muted disabled:opacity-50"
           >
             {make}
+          </button>
+        ))}
+        {INTENT_CHIPS.map((chip) => (
+          <button
+            key={chip.label}
+            type="button"
+            onClick={() => navigate(chip.filters)}
+            disabled={pending}
+            className="cursor-pointer rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-foreground transition-colors duration-200 hover:border-primary/30 hover:bg-muted disabled:opacity-50"
+          >
+            {chip.label}
           </button>
         ))}
         <Link
