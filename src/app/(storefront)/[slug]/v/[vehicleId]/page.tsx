@@ -6,6 +6,8 @@ import { InquiryDialog } from '../../_components/inquiry-dialog'
 import { SpecGrid } from '../../_components/spec-grid'
 import { formatMileage, formatPrice, vehicleSubtitle } from '../../_components/format'
 import { getPublishedVehicle, getShowroomBySlug } from '../../_lib/queries'
+import { vehicleJsonLd } from '../../_lib/json-ld'
+import { platformUrl } from '@/lib/platform-url'
 import { publicImageUrl } from '@/lib/storage'
 
 export async function generateMetadata({
@@ -24,12 +26,16 @@ export async function generateMetadata({
     vehicle.description ??
     `${vehicleSubtitle(vehicle) || vehicle.title} at ${showroom.name}.`
 
+  const canonical = platformUrl(`/${slug}/v/${vehicleId}`)
+
   return {
     title,
     description,
+    alternates: { canonical },
     openGraph: {
       title,
       description,
+      url: canonical,
       images: vehicle.primary_image ? [{ url: publicImageUrl(vehicle.primary_image) }] : undefined,
     },
   }
@@ -48,9 +54,14 @@ export default async function TenantVehicleDetail({
   if (!vehicle) notFound()
 
   const subtitle = vehicleSubtitle(vehicle)
+  const jsonLd = vehicleJsonLd({ vehicle, showroom })
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Link
         href=".."
         className="text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100"

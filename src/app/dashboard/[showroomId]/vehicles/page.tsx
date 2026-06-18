@@ -40,7 +40,7 @@ export default async function VehiclesListPage({
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Vehicles</h2>
         <Link
-          href={`/dashboard/${showroomId}/vehicles/new`}
+          href={`/dashboard/${showroomId}/vehicles/create`}
           className={buttonVariants({ size: 'sm' })}
         >
           Add vehicle

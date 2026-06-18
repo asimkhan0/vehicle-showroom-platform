@@ -50,7 +50,7 @@ export async function createVehicle(
   opts: { title: string; publish?: boolean },
 ): Promise<string> {
   await page.getByRole('link', { name: 'Add vehicle' }).click()
-  await page.waitForURL('**/vehicles/new')
+  await page.waitForURL('**/vehicles/create')
   await page.getByLabel('Title').fill(opts.title)
   await page.getByLabel('Make').fill('Toyota')
   await page.getByLabel('Model').fill('Supra')
