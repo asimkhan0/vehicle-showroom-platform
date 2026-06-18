@@ -1,7 +1,7 @@
 import { config } from 'dotenv'
 
 // Single source of truth: .env.local holds dev creds (NEXT_PUBLIC_*) and e2e creds
-// (E2E_*). Next.js ignores E2E_* during normal `npm run dev`. Playwright maps
+// (E2E_*). Next.js ignores E2E_* during normal `pnpm dev`. Playwright maps
 // E2E_* → NEXT_PUBLIC_* for the test process and the spawned dev server.
 config({ path: '.env.local', override: false })
 
