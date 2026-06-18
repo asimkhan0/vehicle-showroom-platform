@@ -12,7 +12,10 @@ const required = [
 ]
 for (const key of required) {
   if (!process.env[key]) {
-    console.error(`[e2e] Missing ${key} in .env.local`)
+    console.error(
+      `[e2e] Missing ${key}. Locally: add E2E_* to .env.local. In CI: add repository Secrets ` +
+        `(Settings → Secrets and variables → Actions → Secrets), not Variables.`,
+    )
     process.exit(1)
   }
 }

@@ -24,6 +24,21 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
 
+      - name: Verify E2E secrets
+        env:
+          E2E_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL }}
+          E2E_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY }}
+          E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          missing=0
+          for var in E2E_SUPABASE_URL E2E_SUPABASE_ANON_KEY E2E_SUPABASE_SERVICE_ROLE_KEY; do
+            if [ -z "${!var}" ]; then
+              echo "::error::$var is empty. Add it under Settings → Secrets and variables → Actions → Secrets (not Variables)."
+              missing=1
+            fi
+          done
+          exit $missing
+
       - run: npm run test:e2e
         env:
           CI: true
