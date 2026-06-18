@@ -8,8 +8,8 @@ export function vehicleHref(vehicleId: string): string {
 
 // Inventory home link — subdomain visitors see / in the browser; platform
 // path visitors need the slug prefix.
-export function inventoryHref(slug: string, host: string | null): string {
-  const tenant = resolveTenant(host)
+export async function inventoryHref(slug: string, host: string | null): Promise<string> {
+  const tenant = await resolveTenant(host)
   // Subdomain and custom-domain visitors see / in the browser; only platform
   // path access (localhost:3000/{slug}) needs the slug prefix.
   if (tenant.kind === 'tenant') return '/'

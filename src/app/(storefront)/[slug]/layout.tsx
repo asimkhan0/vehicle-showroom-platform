@@ -44,7 +44,7 @@ export default async function TenantLayout({
   } as React.CSSProperties
 
   const host = (await headers()).get('host')
-  const inventoryHome = inventoryHref(slug, host)
+  const inventoryHome = await inventoryHref(slug, host)
 
   return (
     <div

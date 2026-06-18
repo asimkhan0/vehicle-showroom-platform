@@ -6,7 +6,7 @@ import { RESERVED_SLUGS } from '@/lib/reserved-slugs'
 export async function proxy(request: NextRequest) {
   const url = request.nextUrl
   const host = request.headers.get('host')
-  const tenant = resolveTenant(host)
+  const tenant = await resolveTenant(host)
 
   // Legacy: /tenant/{slug}/... → /{slug}/... on the platform host.
   if (tenant.kind === 'platform' && url.pathname.startsWith('/tenant/')) {

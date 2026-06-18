@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireUser } from '@/lib/auth'
 import { RESERVED_SLUGS, slugSchema } from '@/lib/validation'
+import { syncActiveDomainsForShowroom } from './domains'
 
 const showroomSchema = z.object({
   name: z.string().min(2, 'At least 2 characters').max(80),
@@ -87,6 +88,25 @@ export async function updateShowroom(
   }
 
   const { supabase } = await requireUser()
+
+  const { data: previous } = await supabase
+    .from('showrooms')
+    .select('slug')
+    .eq('id', showroomId)
+    .maybeSingle()
+
+  if (previous?.slug !== parsed.data.slug) {
+    try {
+      await syncActiveDomainsForShowroom(showroomId, parsed.data.slug)
+    } catch (error) {
+      return {
+        error:
+          error instanceof Error
+            ? `Could not update custom domain routing: ${error.message}`
+            : 'Could not update custom domain routing',
+      }
+    }
+  }
 
   const { error } = await supabase
     .from('showrooms')

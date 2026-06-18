@@ -23,6 +23,7 @@ export default async function ShowroomLayout({
   const tabs = [
     { href: `/dashboard/${showroomId}/vehicles`, label: 'Vehicles' },
     { href: `/dashboard/${showroomId}/inquiries`, label: 'Inquiries' },
+    { href: `/dashboard/${showroomId}/domains`, label: 'Domains' },
     { href: `/dashboard/${showroomId}/settings`, label: 'Settings' },
   ]
 

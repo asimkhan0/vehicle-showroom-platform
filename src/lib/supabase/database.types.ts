@@ -42,6 +42,7 @@ export type Database = {
       domains: {
         Row: {
           created_at: string
+          dns_records: Json | null
           hostname: string
           id: string
           showroom_id: string
@@ -51,6 +52,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          dns_records?: Json | null
           hostname: string
           id?: string
           showroom_id: string
@@ -60,6 +62,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          dns_records?: Json | null
           hostname?: string
           id?: string
           showroom_id?: string
