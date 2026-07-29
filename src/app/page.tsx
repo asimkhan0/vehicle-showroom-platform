@@ -23,6 +23,8 @@ import {
   hasActiveFilters,
   parseDiscoverySearchParams,
 } from '@/app/_lib/discovery/search-params'
+import { MobileFilterSheet } from '@/components/mobile-filter-sheet'
+import { StateError } from '@/components/state-error'
 import { buttonVariants } from '@/components/ui/button'
 import { VehicleGridSkeleton } from '@/components/vehicle-card-skeleton'
 import { cn } from '@/lib/utils'
@@ -68,13 +70,12 @@ export default async function DiscoveryHome({
     <div className="flex min-h-dvh flex-col bg-background">
       <PlatformHeader />
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
-        <section className="mb-12">
+      <main className="shell flex-1 py-10">
+        {/* Hero. One job: get the buyer into a search. */}
+        <section className="mb-10 flex max-w-3xl flex-col">
           <p className="text-overline text-primary">Vehicle marketplace</p>
-          <h1 className="text-display mt-2 text-balance tracking-tight text-foreground">
-            Find your next car
-          </h1>
-          <p className="mt-3 max-w-2xl text-pretty text-muted-foreground">
+          <h1 className="text-display mt-2 text-balance text-foreground">Find your next car</h1>
+          <p className="mt-3 text-pretty text-text-2">
             Browse published inventory from showrooms on the platform. Dealers run their own
             storefronts — you search them all in one place.
           </p>
@@ -83,51 +84,64 @@ export default async function DiscoveryHome({
           </div>
         </section>
 
-        <Suspense fallback={<VehicleGridSkeleton count={4} />}>
-          <DiscoveryFilters filters={filters} />
-        </Suspense>
-
-        <FilterChipBar filters={filters} />
-
+        {/* Rails belong above the fold only when the buyer has not searched yet. */}
         {!filtered && stats.vehicleCount > 4 && (
-          <FeaturedListingsRail listings={recent} />
+          <div className="mb-12">
+            <FeaturedListingsRail listings={recent} />
+          </div>
         )}
 
-        <section className="mt-10">
-          {result.error ? (
-            <div
-              role="alert"
-              className="mb-6 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-            >
-              Could not load listings. Please try again in a moment.
-            </div>
-          ) : (
-            <DiscoveryResultsTitle filters={filters} total={result.total} />
-          )}
+        {/*
+          Filters move out of the content column and into a sticky rail. The old
+          full-width filter block pushed the first result below the fold, which
+          is the failure DESIGN_RESEARCH §2 flags as the category's worst habit.
+        */}
+        <div className="grid min-w-0 items-start gap-8 lg:grid-cols-[272px_minmax(0,1fr)]">
+          <aside className="sticky top-24 hidden lg:block">
+            <Suspense fallback={null}>
+              <DiscoveryFilters filters={filters} />
+            </Suspense>
+          </aside>
 
-          {result.listings.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {result.listings.map((listing, i) => (
-                <DiscoveryCard key={listing.id} listing={listing} priority={i < 4} />
-              ))}
-            </div>
-          ) : !result.error ? (
-            <DiscoveryEmptyState filtered={filtered} filters={filters} />
-          ) : null}
+          <div className="flex min-w-0 flex-col gap-6">
+            <MobileFilterSheet>
+              <Suspense fallback={null}>
+                <DiscoveryFilters filters={filters} />
+              </Suspense>
+            </MobileFilterSheet>
 
-          <DiscoveryPagination
-            filters={filters}
-            page={result.page}
-            totalPages={result.totalPages}
-          />
-        </section>
+            <FilterChipBar filters={filters} />
 
-        <section className="mt-16 space-y-8">
+            {result.error ? (
+              <StateError />
+            ) : (
+              <DiscoveryResultsTitle filters={filters} total={result.total} />
+            )}
+
+            {result.listings.length > 0 ? (
+              <div className="card-grid">
+                {result.listings.map((listing, i) => (
+                  <DiscoveryCard key={listing.id} listing={listing} priority={i < 4} />
+                ))}
+              </div>
+            ) : !result.error ? (
+              <DiscoveryEmptyState filtered={filtered} filters={filters} />
+            ) : null}
+
+            <DiscoveryPagination
+              filters={filters}
+              page={result.page}
+              totalPages={result.totalPages}
+            />
+          </div>
+        </div>
+
+        <section className="mt-16 flex flex-col gap-8">
           <TrustStrip stats={stats} />
-          <div className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card px-6 py-10 text-center shadow-sm sm:flex-row sm:justify-between sm:text-left">
+          <div className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
             <div>
-              <p className="text-lg font-semibold text-foreground">Ready to sell?</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="text-title">Ready to sell?</p>
+              <p className="mt-1 text-sm text-text-2">
                 Publish your inventory and reach buyers searching across Showroom.
               </p>
             </div>
